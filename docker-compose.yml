@@ -1,0 +1,71 @@
+version: '3.7'
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - './api:/usr/src/app'
+    ports:
+      - 5002:5000
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+      - FLASK_DEBUG=1
+    depends_on:
+      - mysqldb
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    depends_on:
+      - api
+      - client
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    volumes:
+      - './client:/usr/src/app'
+      - '/usr/src/app/node_modules'
+    ports:
+      - 3008:3000
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_SERVICE_URL=http://localhost:8080
+    depends_on:
+      - api
+
+  adminer:
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: mysqldb
+      ADMINER_DESIGN: galkaev
+    ports:
+      - "8081:8080"
+    restart: always
+    depends_on:
+      - mysqldb
+
+  mysqldb:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_DATABASE=app
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "8989:3306"
+    volumes:
+      - my-data:/var/lib/mysql
+      # - ./data/dump.sql:/docker-entrypoint-initdb.d/database.sql
+
+volumes:
+  my-data:
