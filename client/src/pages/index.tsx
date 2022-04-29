@@ -1,50 +1,108 @@
 import { useState, useRef } from 'react';
 import { Button, Grid, GridContainer } from '@trussworks/react-uswds';
 import RegistrationForm from '../components/registration-form.tsx';
+import FoundPets from '../components/found-pets.tsx';
 import { UserApi, PetApi } from '../services';
 import styles from '../styles/Home.module.css'
 
 const Home = (): React.ReactElement => {
     const regFormRef = useRef(null);
+    const [foundPets, setFoundPets] = useState([]);
+    const [submitComplete, setSubmitComplete] = useState(false);
+    const [formErrors, setFormErrors] = useState([]);
 
     const focusForm = () => {
-        regFormRef.current.focus()
+        if (regFormRef.current) {
+            regFormRef.current.focus()
+        }
     };
 
     const handleFormSubmit = async evt => {
         evt.preventDefault();
-        console.log(evt);
         const fd = new FormData(evt.target);
-        console.log([...fd.entries()]);
-        console.log(fd.get('owner-fullname'));
         const userApi = new UserApi();
         userApi.setup();
         const userData = {
             fullname: fd.get('owner-fullname'),
             email: fd.get('owner-email')
         }
-        const userResponse = await userApi.createUser(userData);
-        console.log(userResponse);
-        const { user } = userResponse;
 
-        const petApi = new PetApi();
-        petApi.setup();
-        let petType = fd.get('pet-type');
-        console.log(fd.get('pet-type-custom'));
-
-        if (petType === 'Other' && fd.get('pet-type-custom')) {
-            petType = fd.get('pet-type-custom');
+        let user = null;
+        try {
+            const userResponse = await userApi.createUser(userData);
+            if (userResponse.user) {
+                user = userResponse.user;
+            } else {
+                if (userResponse.kind === 'bad-email') {
+                    setFormErrors(errors => {
+                        errors.push({
+                            field: 'owner-email',
+                            message: 'This email can not be used'
+                        })
+                        return errors;
+                    });
+                }
+                console.log(formErrors);
+                return;
+            }
+            console.log(userResponse);
+        } catch (e) {
+            console.log(e);
         }
 
-        const petData = {
-            name: fd.get('pet-name'),
-            type: petType,
-            user_id: user.id
+        if (user) {
+            const petName = fd.get('pet-name').trim();
+            const petType = fd.get('pet-type') === 'Other' && fd.get('pet-type-custom') ? fd.get('pet-type-custom').trim() : fd.get('pet-type');
+
+            const petData = {
+                name: petName,
+                type: petType,
+                user_id: user.id,
+                in_custody: 0,
+            }
+
+            const petApi = new PetApi();
+
+            let petExists = [];
+
+            console.log(user);
+            if (user.pets.length > 0) {
+                const foundPets = user.pets.filter(pet => pet.in_custody !== 0);
+                console.log(foundPets);
+                if (foundPets.length > 0) {
+                    setFoundPets(foundPets);
+                }
+
+                petExists = user.pets.filter(pet => petApi.comparePets(pet, petData));
+
+            }
+
+            // Dont POST pet if it already exists
+            if (petExists.length === 0) {
+                petApi.setup();
+
+                const petResponse = await petApi.createPet(petData);
+                console.log(petResponse)
+            }
         }
 
-        const petResponse = await petApi.createPet(petData);
-        console.log(petResponse)
+        setSubmitComplete(true);
     };
+
+    const formOrResult = () => {
+        if (submitComplete && foundPets.length > 0) {
+            return <FoundPets pets={foundPets} />
+        } else if (submitComplete && foundPets.length === 0) {
+            return (
+                <div>
+                    <h2>Thanks for signing up!</h2>
+                    <p>If your pet is found you will be notified by email</p>
+                </div>
+            );
+        }
+
+        return <RegistrationForm onSubmit={handleFormSubmit} ref={regFormRef} errors={formErrors} />
+};
 
     return (
         <>
@@ -72,7 +130,7 @@ const Home = (): React.ReactElement => {
                         </h2>
                     </Grid>
                     <Grid tablet={{ col: 8 }}>
-                        <RegistrationForm onSubmit={handleFormSubmit} ref={regFormRef} />
+                        {formOrResult()}
                     </Grid>
                 </Grid>
             </GridContainer>

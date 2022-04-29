@@ -10,7 +10,7 @@ services:
       - 5002:5000
     environment:
       - FLASK_ENV=development
-      - FLASK_APP=app.py
+      - FLASK_APP=project
       - FLASK_DEBUG=1
     depends_on:
       - mysqldb
@@ -65,7 +65,6 @@ services:
       - "8989:3306"
     volumes:
       - my-data:/var/lib/mysql
-      # - ./data/dump.sql:/docker-entrypoint-initdb.d/database.sql
 
 volumes:
   my-data:

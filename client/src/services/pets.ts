@@ -11,8 +11,21 @@ export class PetApi extends Api {
         return {
             id: raw.id,
             name: raw.name,
-            petType: raw.petType,
+            type: raw.type,
+            in_custody: raw.in_custody,
+            user_id: raw.user_id,
         };
+    }
+
+    strCompare(str1, str2) {
+        return str1.localeCompare(str2, undefined, { sensitivity: 'base' });
+    }
+
+    comparePets(foundPet, rawPet) {
+        const isNameEqual = this.strCompare(foundPet.name, rawPet.name) === 0;
+        const isTypeEqual = this.strCompare(foundPet.type, rawPet.type) === 0;
+        console.log(isNameEqual, isTypeEqual);
+        return isNameEqual && isTypeEqual;
     }
 
     async createPet(data: object): Promise<GetPetResult> {

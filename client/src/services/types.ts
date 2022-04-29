@@ -5,7 +5,9 @@ export type User = {
 };
 
 export type Pet = {
-    id: number;
+    id?: number;
     name: string;
-    petType: string;
+    type: string;
+    user_id: number;
+    in_custody: number;
 };

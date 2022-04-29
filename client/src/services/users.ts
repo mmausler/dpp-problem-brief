@@ -1,10 +1,10 @@
 import { Api } from "./api";
 import { ApiResponse } from "apisauce";
 import { GeneralApiProblem, getGeneralApiProblem } from "./api/api-problem";
-import { User } from "./types";
+import { User, Pet } from "./types";
 
 export type GetUsersResult = { kind: "ok"; users: User[] } | GeneralApiProblem;
-export type GetUserResult = { kind: "ok"; user: User } | GeneralApiProblem;
+export type GetUserResult = { kind: "ok"; user: User; pets: Pet[] } | GeneralApiProblem;
 export type GetDefaultResult = { kind: "ok"; status: string } | GeneralApiProblem;
 
 export class UserApi extends Api {
@@ -29,8 +29,15 @@ export class UserApi extends Api {
 
         console.log(response);
         try {
-            const user: User = response.data.data;
-            return { kind: "ok", user: user };
+            if (response.data.status === "success") {
+                const user: User = response.data.data;
+                return { kind: "ok", user };
+            } else {
+                if (response.data.message === "bad-email"){
+                    return { kind: "bad-email" }
+                }
+                return { kind: response.data.message }
+            }
         } catch {
             return { kind: "bad-data" };
         }

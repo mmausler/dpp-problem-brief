@@ -1,11 +1,15 @@
-import React, { useState, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import { Form, Fieldset, FormGroup, Label, TextInput, Dropdown, Button, ErrorMessage } from '@trussworks/react-uswds';
 import FormGroupValidate from './form-group-validate';
 
 const PetTypes = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Lizard', 'Frog', 'Other'];
 
-const RegistrationForm: React.FC = forwardRef(({ onSubmit }, ref) => {
+const RegistrationForm: React.FC = forwardRef(({ onSubmit, errors }, ref) => {
     const [otherTypeSelected, setOtherTypeSelected] = useState(false);
+
+    useEffect(() => {
+
+}, [errors]);
 
     const handleTypeChange = evt => {
         console.log(evt);
@@ -30,7 +34,11 @@ const RegistrationForm: React.FC = forwardRef(({ onSubmit }, ref) => {
                         required
                     />
                 </FormGroupValidate>
-                <FormGroupValidate labelFor="input-owner-email" labelValue="Email Address">
+                <FormGroupValidate
+                    labelFor="input-owner-email"
+                    labelValue="Email Address"
+                    error={errors.length > 0 && errors.filter(e => e.field === 'owner-email')[0]}
+                >
                     <TextInput
                         id="input-owner-email"
                         name="owner-email"
