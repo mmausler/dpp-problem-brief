@@ -4,16 +4,65 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+    command: ./start-flask
     volumes:
       - './api:/usr/src/app'
     ports:
-      - 5002:5000
-    environment:
-      - FLASK_ENV=development
-      - FLASK_APP=project
-      - FLASK_DEBUG=1
+      - ${FLASK_APP_PORT}:5000
+    env_file:
+      - .env
     depends_on:
       - mysqldb
+      - vsftpd
+      - rabbitmq
+
+  celery_worker:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: ./start-celeryworker
+    volumes:
+      - './api:/usr/src/app'
+    env_file:
+      - .env
+    depends_on:
+      - mysqldb
+      - vsftpd
+      - redis
+
+  celery_beat:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: ./start-celerybeat
+    volumes:
+      - './api:/usr/src/app'
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=project
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - mysqldb
+      - vsftpd
+      - redis
+
+  flower:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    command: ./start-flower
+    volumes:
+      - './api:/usr/src/app'
+    env_file:
+      - .env
+    ports:
+      - 5557:5555
+    depends_on:
+      - mysqldb
+      - vsftpd
+      - redis
 
   nginx:
     build:
@@ -21,7 +70,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - 8080:8080
+      - ${NGINX_PORT}:8080
     depends_on:
       - api
       - client
@@ -37,7 +86,7 @@ services:
       - 3008:3000
     environment:
       - NODE_ENV=development
-      - REACT_APP_SERVICE_URL=http://localhost:8080
+      - REACT_APP_SERVICE_URL=http://localhost:${NGINX_PORT}
     depends_on:
       - api
 
@@ -57,14 +106,31 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
-      - MYSQL_DATABASE=app
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=admin
-      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=${MYSQL_DB}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASS}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASS}
     ports:
-      - "8989:3306"
+      - "${MYSQL_PORT}:3306"
     volumes:
       - my-data:/var/lib/mysql
+
+  vsftpd:
+    image: fauria/vsftpd:latest
+    restart: always
+    environment:
+      - FTP_USER=${FTP_USER}
+      - FTP_PASS=${FTP_PASS}
+      - PASV_ADDRESS=vsftpd
+      - PASV_ADDR_RESOLVE=YES
+      - LOG_STDOUT=YES
+    ports:
+      - "${FTP_PORT}:21"
+    volumes:
+      - ./ftp:/home/vsftpd
+
+  redis:
+    image: redis:6-alpine
 
 volumes:
   my-data:

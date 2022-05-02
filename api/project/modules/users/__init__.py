@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_restx import Resource, Api
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from project.extensions import db
+from project.modules.mailer import send_mail
 
 from .models import User as UserModel
 
@@ -34,6 +35,9 @@ class Users(Resource):
             if user:
                 user.email = email
                 db.session.commit()
+                for pet in user.pets:
+                    if pet.in_custody == 1:
+                        send_mail(user, pet)
             else:
                 emailUsed = UserModel.query.filter(
                     db.func.lower(UserModel.email) == db.func.lower(email)

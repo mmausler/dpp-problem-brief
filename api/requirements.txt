@@ -4,3 +4,8 @@ flask-restx==0.5.1
 Flask-SQLAlchemy==2.5.1
 flask-migrate==3.1.0
 mysqlclient==2.1.0
+ftputil==5.0.3
+sendgrid==6.9.7
+celery==5.2.6
+redis==4.2.2
+flower==1.0.0

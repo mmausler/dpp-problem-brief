@@ -28,9 +28,11 @@ class Pets(Resource):
         user_id = post_data.get('user_id')
 
         try:
-            pet = PetModel(name, type, user_id)
-            db.session.add(pet)
-            db.session.commit()
+            pet = PetModel(name=name, type=type, user_id=user_id)
+            pet_match = pet.findMatch()
+            if pet_match is None:
+                db.session.add(pet)
+                db.session.commit()
         except IntegrityError:
             response_object = {'status': 'fail', 'message': 'db error'}
             db.session.rollback()

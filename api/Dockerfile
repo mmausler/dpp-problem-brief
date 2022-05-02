@@ -16,5 +16,5 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 COPY . /usr/src/app
 
 # run server
-ENTRYPOINT [ "flask" ]
-CMD ["run", "--host=0.0.0.0", "--port=5000"]
+# ENTRYPOINT [ "flask" ]
+# CMD ["run", "--host=0.0.0.0", "--port=5000"]
