@@ -10,6 +10,6 @@ def init_app(app):
     """
     for extension in (
             cross_origin_resource_sharing,
-            db,
+            db
     ):
         extension.init_app(app)

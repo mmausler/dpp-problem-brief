@@ -15,19 +15,17 @@ Before you run this application make sure you have the following installed on yo
 
 ### Running Locally
 
-To run the application locally, run the following command from the project root
+To run the application locally, copy `example.env` to `.env` and adjust the following keys to the values provided separately
+
+```
+SENDGRID_FROM_EMAIL='API_EMAIL_HERE'
+SENDGRID_API_KEY='API_KEY_HERE'
+```
+
+Then run the following command from the project root
 
 ```
 $ docker-compose up
-```
-
-#### Database Migration and Seed
-
-```
-# Run database migration
-$ docker-compose exec api flask db upgrade
-# Run database seed
-$ docker-compose exec api flask seed-db
 ```
 
 After you run above commands you can open the application from [http://localhost:8080/](http://localhost:8080/)

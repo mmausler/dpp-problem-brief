@@ -1,14 +1,34 @@
-from flask import Blueprint, jsonify, request
-from flask_restx import Resource, Api
+from flask import Blueprint, jsonify, request, make_response
+from flask_restx import Resource, Namespace, Api, fields
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from project.extensions import db
 from project.modules.mailer import send_mail
 
 from .models import User as UserModel
 
-users_blueprint = Blueprint('users', __name__)
-api = Api(users_blueprint)
 
+users_blueprint = Blueprint('users', __name__)
+
+api = Api(
+    users_blueprint,
+    title="DPP API - Users",
+    doc="/doc/"
+)
+
+# ns = api.namespace('users', description="User management")
+# api.base_path("/api/v1")
+
+user_model = api.model(
+    'User',
+    {
+        'id': fields.Integer(),
+        'fullname': fields.String(),
+        'email': fields.String()
+    }
+)
+
+
+# @ns.route('/')
 class Users(Resource):
     def get(self):
         users = UserModel.query.all()
@@ -18,6 +38,7 @@ class Users(Resource):
         }
         return jsonify(response_object)
 
+    # @api.marshal_with(user_model)
     def post(self):
         post_data = request.get_json()
         response_object = {'status': 'fail', 'message': 'Invalid payload'}
@@ -35,16 +56,15 @@ class Users(Resource):
             if user:
                 user.email = email
                 db.session.commit()
-                for pet in user.pets:
-                    if pet.in_custody == 1:
-                        send_mail(user, pet)
+                for pet in [p for p in user.pets if p.in_custody == 1]:
+                    send_mail(user, pet)
             else:
                 emailUsed = UserModel.query.filter(
                     db.func.lower(UserModel.email) == db.func.lower(email)
                 ).first()
                 if emailUsed:
                     response_object = {'status': 'fail', 'message': 'bad-email'}
-                    return jsonify(response_object)
+                    return make_response(jsonify(response_object), HTTPStatus.BAD_REQUEST)
                 else:
                     user = UserModel(fullname, email)
                     db.session.add(user)
@@ -53,7 +73,7 @@ class Users(Resource):
             db.session.rollback()
             error = str(e.orig)
             response_object = {'status': 'fail', 'message': error}
-            return jsonify(response_object)
+            return make_response(jsonify(response_object), HTTPStatus.BAD_REQUEST)
 
         try:
             response_object = {

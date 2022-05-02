@@ -1,4 +1,5 @@
 .env
 .DS_Store
 tags
+ftp_downloads
 node_modules

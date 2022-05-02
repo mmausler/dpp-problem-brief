@@ -1,12 +1,13 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button, Grid, GridContainer } from '@trussworks/react-uswds';
-import RegistrationForm from '../components/registration-form.tsx';
-import FoundPets from '../components/found-pets.tsx';
+import RegistrationForm from '../components/registration-form';
+import FoundPets from '../components/found-pets';
 import { UserApi, PetApi } from '../services';
+import { FormFieldError } from '../services/types';
 import styles from '../styles/Home.module.css'
 
 const Home = (): React.ReactElement => {
-    const regFormRef = useRef(null);
+    const regFormRef = useRef<HTMLInputElement>(null);
     const [foundPets, setFoundPets] = useState([]);
     const [submitComplete, setSubmitComplete] = useState(false);
     const [formErrors, setFormErrors] = useState([]);
@@ -30,15 +31,16 @@ const Home = (): React.ReactElement => {
         let user = null;
         try {
             const userResponse = await userApi.createUser(userData);
-            if (userResponse.user) {
+            if (userResponse.kind === "ok") {
                 user = userResponse.user;
             } else {
-                if (userResponse.kind === 'bad-email') {
+                if (userResponse.kind === 'bad-data') {
+                    const error: FormFieldError = {
+                        field: 'owner-email',
+                        message: 'This email can not be used'
+                    };
                     setFormErrors(errors => {
-                        errors.push({
-                            field: 'owner-email',
-                            message: 'This email can not be used'
-                        })
+                        errors.push(error)
                         return errors;
                     });
                 }
@@ -51,12 +53,12 @@ const Home = (): React.ReactElement => {
         }
 
         if (user) {
-            const petName = fd.get('pet-name').trim();
-            const petType = fd.get('pet-type') === 'Other' && fd.get('pet-type-custom') ? fd.get('pet-type-custom').trim() : fd.get('pet-type');
+            const petName = fd.get('pet-name');
+            const petType = fd.get('pet-type') === 'Other' && fd.get('pet-type-custom') ? fd.get('pet-type-custom') : fd.get('pet-type');
 
             const petData = {
-                name: petName,
-                type: petType,
+                name: String(petName).trim(),
+                type: String(petType).trim(),
                 user_id: user.id,
                 in_custody: 0,
             }
@@ -111,7 +113,7 @@ const Home = (): React.ReactElement => {
                     <div className="usa-hero__callout">
                         <h1 className="usa-hero__heading">
                             <span className="usa-hero__heading--alt">Lost your pet?</span>
-                            We're here to help.
+                            We&apos;re here to help.
                         </h1>
                         <p>
                             Sign up for our Rescued Pet Notification Service to be notified if your pet is found.
@@ -126,7 +128,7 @@ const Home = (): React.ReactElement => {
                 <Grid row gap>
                     <Grid tablet={{ col: 4 }}>
                         <h2 className="font-heading-xl margin-top-0 tablet:margin-bottom-0">
-                            We'll contact you if your pet has been found
+                            We&apos;ll contact you if your pet has been found
                         </h2>
                     </Grid>
                     <Grid tablet={{ col: 8 }}>

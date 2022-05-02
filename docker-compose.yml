@@ -14,7 +14,7 @@ services:
     depends_on:
       - mysqldb
       - vsftpd
-      - rabbitmq
+      - redis
 
   celery_worker:
     build:

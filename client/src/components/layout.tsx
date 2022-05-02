@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import Head from 'next/head'
+import Image from 'next/image';
 import { Button, Link, Header, Footer, FooterNav, Logo, Address, Identifier, IdentifierMasthead, IdentifierLogos, IdentifierLogo, IdentifierIdentity, Title, Menu, NavDropDownButton, NavMenuButton, PrimaryNav, Search, Icon, Grid, GridContainer } from '@trussworks/react-uswds';
 import styles from '../styles/Home.module.css'
 
@@ -38,7 +39,7 @@ const Layout = ({ children }) => {
             <Header basic>
                 <div className="usa-nav-container">
                     <div className="usa-navbar">
-                        <Title><img src="/images/logo.svg" className={styles.logo} alt="NYC Department for the Protection of Pets" /></Title>
+                        <Title><Image src="/images/logo.svg" className={styles.logo} alt="NYC Department for the Protection of Pets" /></Title>
                         <NavMenuButton onClick={onClick} label="Menu" />
                     </div>
                     <PrimaryNav
@@ -75,7 +76,7 @@ const Layout = ({ children }) => {
                     <Logo
                         size="slim"
                         image={
-                            <img
+                            <Image
                                 className="usa-footer__logo-img width-full"
                                 alt="img alt text"
                                 src={'/images/nyc-black.svg'}

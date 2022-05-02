@@ -4,7 +4,7 @@ import { GeneralApiProblem, getGeneralApiProblem } from "./api/api-problem";
 import { User, Pet } from "./types";
 
 export type GetUsersResult = { kind: "ok"; users: User[] } | GeneralApiProblem;
-export type GetUserResult = { kind: "ok"; user: User; pets: Pet[] } | GeneralApiProblem;
+export type GetUserResult = { kind: "ok"; user?: User } | GeneralApiProblem;
 export type GetDefaultResult = { kind: "ok"; status: string } | GeneralApiProblem;
 
 export class UserApi extends Api {
@@ -34,7 +34,7 @@ export class UserApi extends Api {
                 return { kind: "ok", user };
             } else {
                 if (response.data.message === "bad-email"){
-                    return { kind: "bad-email" }
+                    return { kind: "rejected" }
                 }
                 return { kind: response.data.message }
             }

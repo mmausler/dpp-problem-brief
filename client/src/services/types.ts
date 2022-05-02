@@ -11,3 +11,8 @@ export type Pet = {
     user_id: number;
     in_custody: number;
 };
+
+export type FormFieldError = {
+    field: string,
+    message: string,
+};

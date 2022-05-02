@@ -9,8 +9,9 @@ const Unsubscribe = (): React.ReactElement => {
         const fd = new FormData(evt.target);
         const userApi = new UserApi();
         userApi.setup();
-        userApi.unsubscribe(fd.get('owner-email'));
+        userApi.unsubscribe(String(fd.get('owner-email')));
     };
+
     return (
         <section className="usa-section">
             <GridContainer>

@@ -1,15 +1,21 @@
 import React, { useState, useEffect, forwardRef } from 'react';
 import { Form, Fieldset, FormGroup, Label, TextInput, Dropdown, Button, ErrorMessage } from '@trussworks/react-uswds';
+import { FormFieldError } from '../services/types';
 import FormGroupValidate from './form-group-validate';
 
 const PetTypes = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Lizard', 'Frog', 'Other'];
 
-const RegistrationForm: React.FC = forwardRef(({ onSubmit, errors }, ref) => {
+interface RegistrationFormProps {
+    onSubmit: (evt: any) => Promise<void>;
+    errors: FormFieldError[];
+};
+
+const RegistrationForm = forwardRef<HTMLInputElement, RegistrationFormProps>(({ onSubmit, errors }, ref) => {
     const [otherTypeSelected, setOtherTypeSelected] = useState(false);
 
     useEffect(() => {
 
-}, [errors]);
+    }, [errors]);
 
     const handleTypeChange = evt => {
         console.log(evt);
@@ -75,5 +81,7 @@ const RegistrationForm: React.FC = forwardRef(({ onSubmit, errors }, ref) => {
         </form>
     );
 });
+
+RegistrationForm.displayName = 'RegistrationForm';
 
 export default RegistrationForm;
