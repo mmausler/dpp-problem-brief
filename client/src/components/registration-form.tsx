@@ -13,10 +13,6 @@ interface RegistrationFormProps {
 const RegistrationForm = forwardRef<HTMLInputElement, RegistrationFormProps>(({ onSubmit, errors }, ref) => {
     const [otherTypeSelected, setOtherTypeSelected] = useState(false);
 
-    useEffect(() => {
-
-    }, [errors]);
-
     const handleTypeChange = evt => {
         console.log(evt);
         const { value } = evt.target;

@@ -34,17 +34,17 @@ const Home = (): React.ReactElement => {
             if (userResponse.kind === "ok") {
                 user = userResponse.user;
             } else {
-                if (userResponse.kind === 'bad-data') {
+                if (userResponse.kind === 'rejected') {
                     const error: FormFieldError = {
                         field: 'owner-email',
                         message: 'This email can not be used'
                     };
                     setFormErrors(errors => {
-                        errors.push(error)
-                        return errors;
+                        const copy = errors.slice()
+                        copy.push(error)
+                        return copy;
                     });
                 }
-                console.log(formErrors);
                 return;
             }
             console.log(userResponse);
@@ -91,7 +91,7 @@ const Home = (): React.ReactElement => {
         setSubmitComplete(true);
     };
 
-    const formOrResult = () => {
+    const formOrResult = (formErrors) => {
         if (submitComplete && foundPets.length > 0) {
             return <FoundPets pets={foundPets} />
         } else if (submitComplete && foundPets.length === 0) {

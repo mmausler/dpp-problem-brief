@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from flask import Blueprint, jsonify, request, make_response
 from flask_restx import Resource, Namespace, Api, fields
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
