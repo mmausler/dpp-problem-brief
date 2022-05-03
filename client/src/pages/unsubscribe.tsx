@@ -5,7 +5,7 @@ import { UserApi, PetApi } from '../services';
 
 const Unsubscribe = (): React.ReactElement => {
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-    const [userEmail, setUserEmail] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
     const handleSubmit = async evt => {
         evt.preventDefault();
         console.log(evt);
@@ -15,7 +15,7 @@ const Unsubscribe = (): React.ReactElement => {
         const email = String(fd.get('owner-email'));
         const response = await userApi.unsubscribe(email);
         console.log(response);
-        if (response.status === 'success') {
+        if (response.kind === 'ok') {
             setUserEmail(email);
             setShowSuccessMessage(true);
         }

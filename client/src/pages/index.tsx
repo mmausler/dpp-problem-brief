@@ -91,7 +91,7 @@ const Home = (): React.ReactElement => {
         setSubmitComplete(true);
     };
 
-    const formOrResult = (formErrors) => {
+    const formOrResult = () => {
         if (submitComplete && foundPets.length > 0) {
             return <FoundPets pets={foundPets} />
         } else if (submitComplete && foundPets.length === 0) {
