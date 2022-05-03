@@ -2,6 +2,8 @@
 
 An application to connect people with their lost pets
 
+** Please note this application is not ready for production use **
+
 ## Getting Started
 
 This project consists of a Flask application for the backend API, NextJS for the client side application and nginx as a reverse-proxy for connecting the API and the front-end. This project also uses `docker-compose` to coordinate the application containers.
@@ -28,7 +30,7 @@ Then run the following command from the project root
 $ docker-compose up
 ```
 
-After you run above commands you can open the application from [http://localhost:8080/](http://localhost:8080/)
+After the docker containers build and launch successfully you can open the application at [http://localhost:8080/](http://localhost:8080/)
 
 You can also view the database at [http://localhost:8081/](http://localhost:8081/)
 
@@ -38,8 +40,26 @@ DB User: admin
 DB Pass: admin
 ```
 
-#### Testing the application
+### API Endpoints
 
-The seeder contains sample user and pet data which you can use to test the registration form. An example is below:
+The Flask application running on the `api` container provides two API endpoints, `/api/v1/users` and `/api/v1/pets` which accept `application/json`
 
-A dog named Charlie was found by DPP and entered into the system with the owner 'Barry Manilow'. If Barry registers with the service, it will notify him that Chalie has been found. If Barry is registering with a second lost pet, this pet will be stored and he will still be notified about Charlie.
+#### /api/v1/users
+
+`POST` accepts `fullname: String`, `email: String`
+
+`DELETE` accepts `email: String`
+
+#### /api/v1/pets
+
+`POST` accepts `name: String`, `type: String`, `user_id: Int`
+
+### FTP Scraper Task
+
+This application includes containers that run an FTP server and a Celery task worker that is scheduled to fetch files from this server every 5 minutes. As per the problem brief specification directories on the FTP server are in the format of `month-day-year/pets-month-day-year.csv` ie `04-01-2022/pets-04-01-2022.csv`.
+
+To test the notification service you could sign up a user & pet, and then add a directory and csv file using the naming format above to `ftp/dpp/found_pets/`. When the scraper task is run you should receive an email concerning your pet.
+
+Alternatively you could review one of the existing seed files at `ftp/dpp/found_pets/` and sign up for the service using an existing `user` and `pet`. You should receive an email concerning this pet.
+
+The cron job for this task is set in `api/project/__init__.py` if you would like to adjust the frequency

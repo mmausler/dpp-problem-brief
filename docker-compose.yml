@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 services:
   api:
     build:
@@ -12,9 +12,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - mysqldb
-      - vsftpd
-      - redis
+      mysqldb:
+        condition: service_healthy
+      vsftpd:
+        condition: service_started
+      redis:
+        condition: service_started
 
   celery_worker:
     build:
@@ -26,9 +29,14 @@ services:
     env_file:
       - .env
     depends_on:
-      - mysqldb
-      - vsftpd
-      - redis
+      mysqldb:
+        condition: service_healthy
+      api:
+        condition: service_started
+      vsftpd:
+        condition: service_started
+      redis:
+        condition: service_started
 
   celery_beat:
     build:
@@ -41,12 +49,19 @@ services:
       - .env
     environment:
       - FLASK_APP=project
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_BROKER_URL=${CELERY_BROKER_URL}
+      - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     depends_on:
-      - mysqldb
-      - vsftpd
-      - redis
+      mysqldb:
+        condition: service_healthy
+      api:
+        condition: service_started
+      celery_worker:
+        condition: service_started
+      vsftpd:
+        condition: service_started
+      redis:
+        condition: service_started
 
   flower:
     build:
@@ -58,10 +73,11 @@ services:
     env_file:
       - .env
     ports:
-      - 5557:5555
+      - ${FLOWER_PORT}:5555
     depends_on:
-      - mysqldb
-      - vsftpd
+      - api
+      - celery_worker
+      - celery_beat
       - redis
 
   nginx:
@@ -99,7 +115,8 @@ services:
       - "8081:8080"
     restart: always
     depends_on:
-      - mysqldb
+      mysqldb:
+        condition: service_started
 
   mysqldb:
     image: mysql:latest
@@ -114,6 +131,11 @@ services:
       - "${MYSQL_PORT}:3306"
     volumes:
       - my-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "127.0.0.1", "-u", "${MYSQL_USER}", "--password=${MYSQL_PASS}" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
 
   vsftpd:
     image: fauria/vsftpd:latest
